@@ -16,13 +16,13 @@ import (
 	"ampli/api/internal/db"
 	"ampli/api/internal/favorite"
 	"ampli/api/internal/history"
-	"ampli/api/internal/mail"
 	"ampli/api/internal/middleware"
 	"ampli/api/internal/playlist"
 	"ampli/api/internal/profile"
 	"ampli/api/internal/scheduler"
 	"ampli/api/internal/search"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -33,6 +33,10 @@ func main() {
 	_ = godotenv.Load()
 
 	cfg := config.Load()
+
+	// Initialize Clerk — reads CLERK_SECRET_KEY from env automatically,
+	// but we set it explicitly so a missing key fails fast.
+	clerk.SetKey(cfg.ClerkSecretKey)
 
 	// Structured logger (replaces pino)
 	var handler slog.Handler
@@ -54,7 +58,6 @@ func main() {
 
 	// External clients
 	cloudClient := cloud.New(cfg)
-	mailer := mail.New(cfg)
 
 	// Gin setup
 	if !cfg.IsDev() {
@@ -78,14 +81,14 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "timestamp": time.Now().UTC()})
 	})
 
-	// Serve static files (reset-password page, etc.)
+	// Serve static files
 	r.Static("/public", "./public")
 
 	// Auth middleware (shared across handlers)
 	authMiddleware := middleware.NewAuth(database, cfg)
 
 	// Register domain handlers
-	auth.NewHandler(database, cloudClient, mailer, cfg).RegisterRoutes(r, authMiddleware)
+	auth.NewHandler(database, cloudClient, nil, nil).RegisterRoutes(r, authMiddleware)
 	audio.NewHandler(database, cloudClient).RegisterRoutes(r, authMiddleware)
 	profile.NewHandler(database).RegisterRoutes(r, authMiddleware)
 	playlist.NewHandler(database).RegisterRoutes(r, authMiddleware)
@@ -101,7 +104,7 @@ func main() {
 		Addr:         ":" + cfg.Port,
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 30 * time.Second, // larger for file uploads
+		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
 

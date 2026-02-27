@@ -6,11 +6,11 @@ import (
 )
 
 type Config struct {
-	Port    string
-	Env     string
+	Port     string
+	Env      string
 	MongoURI string
 
-	JWTSecret      string
+	ClerkSecretKey string
 	AllowedOrigins []string
 
 	CloudName   string
@@ -21,10 +21,7 @@ type Config struct {
 	SMTPPort string
 	SMTPUser string
 	SMTPPass string
-
-	VerificationEmail string
-	PasswordResetLink string
-	SignInURL         string
+	MailFrom  string
 }
 
 func Load() *Config {
@@ -37,7 +34,7 @@ func Load() *Config {
 		Port:           getEnv("PORT", "8989"),
 		Env:            getEnv("NODE_ENV", "development"),
 		MongoURI:       os.Getenv("MONGO_URI"),
-		JWTSecret:      os.Getenv("JWT_SECRET"),
+		ClerkSecretKey: os.Getenv("CLERK_SECRET_KEY"),
 		AllowedOrigins: origins,
 
 		CloudName:   os.Getenv("CLOUD_NAME"),
@@ -48,10 +45,7 @@ func Load() *Config {
 		SMTPPort: os.Getenv("MAILTRAP_PORT"),
 		SMTPUser: os.Getenv("MAILTRAP_USER"),
 		SMTPPass: os.Getenv("MAILTRAP_PASS"),
-
-		VerificationEmail: os.Getenv("VERIFICATION_EMAIL"),
-		PasswordResetLink: os.Getenv("PASSWORD_RESET_LINK"),
-		SignInURL:         os.Getenv("SIGN_IN_URL"),
+		MailFrom: getEnv("MAIL_FROM", "noreply@ampli.app"),
 	}
 }
 

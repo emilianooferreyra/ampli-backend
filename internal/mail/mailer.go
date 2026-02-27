@@ -23,7 +23,7 @@ func New(cfg *config.Config) *Mailer {
 		port: cfg.SMTPPort,
 		user: cfg.SMTPUser,
 		pass: cfg.SMTPPass,
-		from: cfg.VerificationEmail,
+		from: cfg.MailFrom,
 	}
 }
 

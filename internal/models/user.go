@@ -14,14 +14,16 @@ type Avatar struct {
 }
 
 // User is the MongoDB document struct.
+// ClerkID is the Clerk user ID (sub claim from Clerk JWTs) used as the
+// primary lookup key. Password and Tokens are no longer stored — Clerk
+// manages authentication.
 type User struct {
 	ID         primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	ClerkID    string               `bson:"clerkId" json:"clerkId"`
 	Name       string               `bson:"name" json:"name"`
 	Email      string               `bson:"email" json:"email"`
-	Password   string               `bson:"password" json:"-"`
 	Verified   bool                 `bson:"verified" json:"verified"`
 	Avatar     *Avatar              `bson:"avatar,omitempty" json:"avatar,omitempty"`
-	Tokens     []string             `bson:"tokens" json:"-"`
 	Favorites  []primitive.ObjectID `bson:"favorites" json:"favorites"`
 	Followers  []primitive.ObjectID `bson:"followers" json:"followers"`
 	Followings []primitive.ObjectID `bson:"followings" json:"followings"`
